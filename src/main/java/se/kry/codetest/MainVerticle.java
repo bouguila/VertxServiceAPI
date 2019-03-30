@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
@@ -15,17 +16,16 @@ import java.util.stream.Collectors;
 public class MainVerticle extends AbstractVerticle {
 
   private HashMap<String, String> services = new HashMap<>();
-  //TODO use this
-  private DBConnector connector;
+  private DBConnector dbConnector;
   private BackgroundPoller poller = new BackgroundPoller();
 
   @Override
   public void start(Future<Void> startFuture) {
-    connector = new DBConnector(vertx);
+    dbConnector = new DBConnector(vertx);
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     services.put("https://www.kry.se", "UNKNOWN");
-    vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(services));
+    vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(this.dbConnector));
     setRoutes(router);
     vertx
         .createHttpServer()
@@ -41,27 +41,54 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   private void setRoutes(Router router){
-    router.route("/*").handler(StaticHandler.create());
-    router.get("/service").handler(req -> {
-      List<JsonObject> jsonServices = services
-          .entrySet()
-          .stream()
-          .map(service ->
-              new JsonObject()
-                  .put("name", service.getKey())
-                  .put("status", service.getValue()))
-          .collect(Collectors.toList());
-      req.response()
-          .putHeader("content-type", "application/json")
-          .end(new JsonArray(jsonServices).encode());
-    });
-    router.post("/service").handler(req -> {
-      JsonObject jsonBody = req.getBodyAsJson();
-      services.put(jsonBody.getString("url"), "UNKNOWN");
-      req.response()
-          .putHeader("content-type", "text/plain")
-          .end("OK");
-    });
+    router.route("/").handler(StaticHandler.create());
+    router.route("/static/*").handler(StaticHandler.create());
+    router.get("/service").handler(this::getServices);
+    router.post("/service").handler(this::addService);
+    router.delete("/service/:id").handler(this::removeService);
+  }
+
+  private void getServices(RoutingContext context) {
+    System.out.println("Get all services");
+    List<Service> services = dbConnector.getAll();
+    List<JsonObject> jsonObjects = services
+            .stream()
+            .map(service -> service.toJsonObject())
+            .collect(Collectors.toList());
+    context.response()
+            .putHeader("content-type", "application/json")
+            .end(new JsonArray(jsonObjects).encode());
+  }
+
+  private void addService(RoutingContext context) {
+    System.out.println("Add new service");
+    JsonObject jsonBody = context.getBodyAsJson();
+    String name = jsonBody.getString("name");
+    String url = jsonBody.getString("url");
+    if (Service.isValidURL(url)) {
+      dbConnector.save(new Service(name,url));
+      context.response()
+              .setStatusCode(201)
+              .putHeader("content-type", "text/plain")
+              .end("OK");
+    } else {
+      context.response().setStatusCode(400).end();
+    }
+  }
+
+  private void removeService(RoutingContext context) {
+    System.out.println("Delete service");
+    String id = context.request().getParam("id");
+    if (id == null) {
+      context.response().setStatusCode(400).end();
+    } else {
+      dbConnector.delete(id);
+      context.response().setStatusCode(204).end();
+    }
+  }
+  
+  public void resetDatabase() {
+    this.dbConnector.reset();
   }
 
 }

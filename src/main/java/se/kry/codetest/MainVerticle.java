@@ -86,7 +86,7 @@ public class MainVerticle extends AbstractVerticle {
       context.response().setStatusCode(204).end();
     }
   }
-  
+
   public void resetDatabase() {
     this.dbConnector.reset();
   }

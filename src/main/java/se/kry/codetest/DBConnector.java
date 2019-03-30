@@ -25,17 +25,22 @@ public class DBConnector {
 
     client = JDBCClient.createShared(vertx, config);
     client.getConnection(conn -> {
-      if (conn.failed()) {
+      if (conn.succeeded()) {
+        connection = conn.result();
+      }
+      else{
         System.err.println(conn.cause().getMessage());
         return;
       }
-      connection = conn.result();
     });
+  }
+  public SQLConnection getConnection(){
+    return this.connection;
   }
 
   public List<Service> getAll() {
     List<Service> services = new ArrayList<>();
-    connection.query("SELECT * from SERVICES", res -> {
+    connection.query("SELECT * FROM service", res -> {
       if (res.succeeded()) {
         ResultSet resultSet = res.result();
         for (JsonObject jsonObject : resultSet.getRows()) {
@@ -52,7 +57,7 @@ public class DBConnector {
   public void save(Service service) {
     JsonObject jsonObject = service.toJsonObject();
     jsonObject.put("_id", service.getId());
-    String insertQuery = "INSERT INTO SERVICES VALUES (?, ?, ?, ?, ?)";
+    String insertQuery = "INSERT INTO service VALUES (?, ?, ?, ?, ?)";
     JsonArray params = new JsonArray()
                               .add(service.getId())
                               .add(service.getName())
@@ -71,7 +76,7 @@ public class DBConnector {
   }
 
   public void delete(String id) {
-    String deleteQuery = "DELETE FROM services WHERE id=?";
+    String deleteQuery = "DELETE FROM service WHERE id=?";
     JsonArray params = new JsonArray().add(id);
     connection.updateWithParams(deleteQuery, params,res -> {
       if (res.succeeded()) {

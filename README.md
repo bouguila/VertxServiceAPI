@@ -1,4 +1,22 @@
-# KRY code assignment
+## Available Rest endpoints:
+- GET `/services`  :list all services
+- POST `/services` : create new Service, accepts application/json.
+body format:
+```
+  {
+    name: string
+    id: string
+    URL: string
+    status: string
+    created: string
+   }
+```
+- DELETE `/services/:id` :deletes a service by id
+
+
+
+
+## Assignment
 
 One of our developers built a simple service poller.
 The service consists of a backend service written in Vert.x (https://vertx.io/) that keeps a list of services (defined by a URL), and periodically does a HTTP GET to each and saves the response ("OK" or "FAIL").

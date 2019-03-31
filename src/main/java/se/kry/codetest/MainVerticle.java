@@ -28,7 +28,7 @@ public class MainVerticle extends AbstractVerticle {
     vertx
         .createHttpServer()
         .requestHandler(router)
-        .listen(54677, result -> {
+        .listen(8080, result -> {
           if (result.succeeded()) {
             System.out.println("KRY code test service started");
             startFuture.complete();

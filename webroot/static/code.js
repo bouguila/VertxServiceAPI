@@ -12,13 +12,15 @@ fetch(servicesRequest)
 
 const saveButton = document.querySelector('#post-service');
 saveButton.onclick = evt => {
-    let urlName = document.querySelector('#url-name').value;
+debugger;
+    let url = document.querySelector('#url').value;
+    let name = document.querySelector('#name').value;
     fetch('/service', {
     method: 'post',
     headers: {
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/json'
     },
-  body: JSON.stringify({url:urlName})
+  body: JSON.stringify({url:url,name:name})
 }).then(res=> location.reload());
 }

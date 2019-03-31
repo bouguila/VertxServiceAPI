@@ -1,5 +1,6 @@
 package se.kry.codetest;
 
+import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -9,6 +10,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +32,7 @@ public class MainVerticle extends AbstractVerticle {
     vertx
         .createHttpServer()
         .requestHandler(router)
-        .listen(8080, result -> {
+        .listen(54677, result -> {
           if (result.succeeded()) {
             System.out.println("KRY code test service started");
             startFuture.complete();
@@ -46,11 +48,13 @@ public class MainVerticle extends AbstractVerticle {
     router.get("/service").handler(this::getServices);
     router.post("/service").handler(this::addService);
     router.delete("/service/:id").handler(this::removeService);
+    router.get("/reset").handler(this::resetDatabase);
   }
 
   private void getServices(RoutingContext context) {
     System.out.println("Get all services");
-    List<Service> services = dbConnector.getAll();
+
+    List<Service> services= dbConnector.getAll();
     List<JsonObject> jsonObjects = services
             .stream()
             .map(service -> service.toJsonObject())
@@ -87,8 +91,9 @@ public class MainVerticle extends AbstractVerticle {
     }
   }
 
-  public void resetDatabase() {
+  public void resetDatabase(RoutingContext context) {
     this.dbConnector.reset();
+    context.response().setStatusCode(204).end();
   }
 
 }

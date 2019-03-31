@@ -2,7 +2,7 @@ package se.kry.codetest;
 
 import io.vertx.core.json.JsonObject;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -12,14 +12,14 @@ public class Service {
     private String name;
     private String URL;
     private String status;
-    private LocalDate created;
+    private LocalDateTime created;
 
     public Service(String name, String URL) {
         this.name = name;
         this.id = getUniqueIdentifier();
         this.URL = URL;
         this.status = "UNKNOWN";
-        this.created=LocalDate.now();
+        this.created = LocalDateTime.now();
     }
 
     public Service(String name, String id, String URL, String status) {
@@ -27,7 +27,14 @@ public class Service {
         this.id = id;
         this.URL = URL;
         this.status = status;
-        this.created=LocalDate.now();
+        this.created=LocalDateTime.now();
+    }
+    public Service(String name, String id, String URL, String status, LocalDateTime created) {
+        this.name = name;
+        this.id = id;
+        this.URL = URL;
+        this.status = status;
+        this.created=created;
     }
 
     public Service(JsonObject jsonObject) {
@@ -35,7 +42,7 @@ public class Service {
         this.id = jsonObject.getString("id");
         this.URL = jsonObject.getString("url");
         this.status = jsonObject.getString("status");
-        this.created=LocalDate.now();
+        this.created=LocalDateTime.now();
     }
 
     private String getUniqueIdentifier() {
@@ -58,7 +65,7 @@ public class Service {
         return status;
     }
 
-    public LocalDate getCreated() {
+    public LocalDateTime getCreated() {
         return created;
     }
 

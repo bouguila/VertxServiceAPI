@@ -52,7 +52,7 @@ public class DBConnector {
 
   public List<Service> getAll() {
     List<Service> services=new ArrayList<>();
-    connection.query("SELECT * FROM service", res -> {
+    connection.query("SELECT * FROM service;", res -> {
       if (res.succeeded()) {
         ResultSet resultSet = res.result();
         for (JsonArray row : resultSet.getResults()) {

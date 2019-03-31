@@ -1,6 +1,5 @@
 package se.kry.codetest;
 
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -10,14 +9,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private HashMap<String, String> services = new HashMap<>();
   private DBConnector dbConnector;
   private BackgroundPoller poller = new BackgroundPoller();
 
@@ -26,7 +22,7 @@ public class MainVerticle extends AbstractVerticle {
     dbConnector = new DBConnector(vertx);
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
-    services.put("https://www.kry.se", "UNKNOWN");
+
     vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(this.dbConnector));
     setRoutes(router);
     vertx

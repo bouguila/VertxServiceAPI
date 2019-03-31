@@ -1,6 +1,6 @@
 ## Available Rest endpoints:
-- GET `/services`  :list all services
-- POST `/services` : create new Service, accepts application/json.
+- **GET** `/services`  :list all services
+- **POST** `/services` : create new Service, accepts application/json.
 body format:
 ```
   {
@@ -11,7 +11,7 @@ body format:
     created: string
    }
 ```
-- DELETE `/services/:id` :deletes a service by id
+- **DELETE** `/services/:id` :deletes a service by id
 
 
 

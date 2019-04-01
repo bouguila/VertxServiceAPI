@@ -38,10 +38,11 @@ public class TestMainVerticle {
         }));
   }
     @Test
-    @DisplayName("Adding a valid service via the POST API results in a 201")
+    @DisplayName("Adding valid service results in a 201")
     @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
     void add_valid_service(Vertx vertx, VertxTestContext testContext) {
-        JsonObject object = new JsonObject().put("url", "http://www.kry.se");
+        JsonObject object = new JsonObject().put("name", "service1")
+                                            .put("url", "http://www.kry.se");
         WebClient.create(vertx)
                 .post(8080, "::1", "/service")
                 .sendJsonObject(object, response -> testContext.verify(() -> {
@@ -51,10 +52,11 @@ public class TestMainVerticle {
     }
 
     @Test
-    @DisplayName("Adding an invalid service via the POST API results in a 400")
+    @DisplayName("Adding service with invalid URL results in a 400")
     @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
     void add_invalid_service(Vertx vertx, VertxTestContext testContext) {
-        JsonObject object = new JsonObject().put("url", "not_a_valid_url");
+        JsonObject object = new JsonObject().put("name", "invalidService")
+                                            .put("url", "sdgf");
         WebClient.create(vertx)
                 .post(8080, "::1", "/service")
                 .sendJsonObject(object, response -> testContext.verify(() -> {
@@ -64,12 +66,14 @@ public class TestMainVerticle {
     }
 
     @Test
-    @DisplayName("Existing services can be correctly deleted")
+    @DisplayName("calling API delete with existing service Id results in deleted service")
     @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
     void delete_service(Vertx vertx, VertxTestContext testContext) {
         // Add two services
-        JsonObject object1 = new JsonObject().put("url", "http://www.one.com");
-        JsonObject object2 = new JsonObject().put("url", "http://www.two.com");
+        JsonObject object1 = new JsonObject().put("name", "one")
+                                             .put("url", "http://www.one.com");
+        JsonObject object2 = new JsonObject().put("name", "two")
+                                             .put("url", "http://www.two.com");
         WebClient.create(vertx)
                 .post(8080, "::1", "/service")
                 .sendJsonObject(object1, response -> testContext.verify(() -> {
@@ -80,7 +84,7 @@ public class TestMainVerticle {
                 .sendJsonObject(object2, response -> testContext.verify(() -> {
                     assertEquals(201, response.result().statusCode());
                 }));
-        // Then list them and verify we have two entries
+        // verify there are 2 entries
         WebClient.create(vertx)
                 .get(8080, "::1", "/service")
                 .send(response -> testContext.verify(() -> {
@@ -88,7 +92,7 @@ public class TestMainVerticle {
                     JsonArray body = response.result().bodyAsJsonArray();
                     assertEquals(2, body.size());
                 }));
-        // Delete the first entry and verify there is one entry less
+        // Delete the 1st entry and verify there is only one service
         WebClient.create(vertx)
                 .get(8080, "::1", "/service")
                 .send(response -> testContext.verify(() -> {

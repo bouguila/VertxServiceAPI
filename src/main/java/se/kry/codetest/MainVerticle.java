@@ -62,6 +62,7 @@ public class MainVerticle extends AbstractVerticle {
 
   private void addService(RoutingContext context) {
     System.out.println("Add new service");
+
     JsonObject jsonBody = context.getBodyAsJson();
     String name = jsonBody.getString("name");
     String url = jsonBody.getString("url");
